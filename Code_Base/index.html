@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sigma Ohio Rizz Society Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #ff0066, #00ffcc, #ff4500);
+            color: #fff;
+            font-family: 'Impact', sans-serif;
+            overflow-x: hidden;
+            position: relative;
+        }
+        .emoji-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.2;
+            animation: scroll-emojis 20s linear infinite;
+        }
+        @keyframes scroll-emojis {
+            0% { background-position: 0 0; }
+            100% { background-position: 100% 100%; }
+        }
+        .post {
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #ffd700;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px;
+            max-width: 600px;
+            animation: glitch 1s infinite;
+        }
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-5px, 5px); }
+            40% { transform: translate(5px, -5px); }
+            60% { transform: translate(-5px, 0); }
+            80% { transform: translate(5px, 0); }
+            100% { transform: translate(0); }
+        }
+        .sigma-btn {
+            background: #ff00ff;
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: transform 0.3s;
+            box-shadow: 0 0 10px #ffd700;
+        }
+        .sigma-btn:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px #00ffcc;
+        }
+        .gyatt-bar {
+            background: #333;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .gyatt-fill {
+            background: linear-gradient(90deg, #ff0066, #ffd700);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        .vibrate {
+            animation: vibrate 0.2s infinite;
+        }
+        @keyframes vibrate {
+            0% { transform: translateX(-2px); }
+            50% { transform: translateX(2px); }
+            100% { transform: translateX(-2px); }
+        }
+        .rizz-explosion {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle, rgba(255,215,0,0.5), transparent);
+            animation: explode 0.5s forwards;
+        }
+        @keyframes explode {
+            0% { opacity: 1; transform: scale(0); }
+            100% { opacity: 0; transform: scale(2); }
+        }
+        .nav-tab {
+            background: #ffd700;
+            color: #000;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .nav-tab:hover {
+            transform: scale(1.1);
+        }
+        .nav-tab.active {
+            background: #ff00ff;
+            box-shadow: 0 0 15px #00ffcc;
+        }
+        .club-item, .upgrade-item, .tax-upgrade {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #ffd700;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+        }
+        canvas {
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+        }
+        .skibidi-toilet {
+            width: 200px;
+            height: 200px;
+            background: #fff;
+            border: 5px solid #ffd700;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            cursor: pointer;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .status-bar {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid #ffd700;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <div class="emoji-bg" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22><text x=%220%22 y=%2220%22 font-size=%2220%22>🚽😎🍑🗿💥</text><text x=%2250%22 y=%2240%22 font-size=%2220%22>🔥💀😳🫦😂</text><text x=%22100%22 y=%6060%22 font-size=%2220%22>😈🦍🧊🍆</text></svg>');"></div>
+    <div class="fixed top-0 left-0 w-full status-bar z-20">
+        <p class="text-center">Aura: <span id="global-rizz-meter">0</span> | Taxes: <span id="global-click-count">0</span> | Clubs: <span id="global-club-count">0</span> | Event: <span id="global-event">None</span></p>
+    </div>
+    <div class="fixed top-14 left-0 w-full bg-black bg-opacity-80 p-4 flex justify-center z-10">
+        <div id="skibbiygram-tab" class="nav-tab active">Skibbiygram 📱</div>
+        <div id="world-tab" class="nav-tab">World 🌎</div>
+        <div id="tax-farm-tab" class="nav-tab">Tax Farm 💰</div>
+    </div>
+
+    <div id="skibbiygram-page" class="mt-32 flex flex-col items-center p-6">
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold animate-pulse">🌌 SIGMA OHIO RIZZ SOCIETY SIMULATOR 🌌</h1>
+            <h2 class="text-3xl mt-2">THE OHIO CLUB 🚽💥</h2>
+            <p class="text-xl mt-2">Rizzler Status: <span id="rizz-meter">0 Aura Points</span> <span id="prestige-badge"></span></p>
+            <div class="gyatt-bar mt-4 w-64 mx-auto">
+                <div id="gyatt-fill" class="gyatt-fill" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="mb-8 flex flex-wrap gap-4">
+            <button id="new-post-btn" class="sigma-btn">Drop a Sigma Post 📱</button>
+            <button id="rizz-up-btn" class="sigma-btn">Rizz Up the Gyatt! 😎</button>
+            <button id="battle-btn" class="sigma-btn">Skibidi Battle Mode ⚔️</button>
+            <button id="challenge-btn" class="sigma-btn">Sigma Challenge 🗿</button>
+        </div>
+
+        <div id="skibbiygram-feed" class="w-full max-w-2xl">
+            <!-- Posts will be dynamically added here -->
+        </div>
+
+        <div id="challenge-popup" class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-90 p-6 rounded-lg text-center">
+            <p id="challenge-text" class="text-lg"></p>
+            <button id="complete-challenge-btn" class="sigma-btn mt-4">Complete Challenge!</button>
+        </div>
+    </div>
+
+    <div id="world-page" class="hidden mt-32 flex flex-col items-center p-6">
+        <h1 class="text-4xl font-bold animate-pulse">🌎 Skibbity World Simulator 🌎</h1>
+        <div id="society-form" class="bg-black bg-opacity-80 p-6 rounded-lg mt-6 w-full max-w-md">
+            <div class="mb-4">
+                <label class="text-lg">Society Name:</label>
+                <input id="society-name" type="text" class="w-full p-2 rounded bg-gray-800 text-white" placeholder="e.g., Skibidi Syndicate" />
+            </div>
+            <div class="mb-4">
+                <label class="text-lg">Sigma Leader:</label>
+                <select id="society-leader" class="w-full p-2 rounded bg-gray-800 text-white">
+                    <option value="Kai Cenat">Kai Cenat</option>
+                    <option value="Baby Gronk">Baby Gronk</option>
+                    <option value="Quandale Dingle">Quandale Dingle</option>
+                    <option value="Skibidi Rizzler">Skibidi Rizzler</option>
+                    <option value="Ohio Sigma Chad">Ohio Sigma Chad</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="text-lg">Society Vibe:</label>
+                <select id="society-vibe" class="w-full p-2 rounded bg-gray-800 text-white">
+                    <option value="Max Rizz">Max Rizz 😎</option>
+                    <option value="Ohio Chaos">Ohio Chaos 🚽</option>
+                    <option value="Gyatt Overload">Gyatt Overload 🍑</option>
+                    <option value="Skibidi Supremacy">Skibidi Supremacy 💥</option>
+                </select>
+            </div>
+            <button id="create-society-btn" class="sigma-btn w-full">Create Skibbity Society! 🗿</button>
+            <p id="society-status" class="text-center mt-4"></p>
+        </div>
+
+        <div id="world-dashboard" class="hidden mt-6 w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-black bg-opacity-80 p-6 rounded-lg">
+                <h2 class="text-2xl font-bold mb-4 animate-bounce">Society Stats 🗿</h2>
+                <p id="society-info" class="text-lg"></p>
+                <p class="text-lg">Prestige: <span id="prestige-level">0</span></p>
+                <button id="prestige-btn" class="sigma-btn w-full mt-4 hidden">Prestige Society! 🌟</button>
+                <h3 class="text-xl mt-4">Upgrades</h3>
+                <div id="upgrade-list" class="mt-2"></div>
+            </div>
+            <div class="bg-black bg-opacity-80 p-6 rounded-lg">
+                <h2 class="text-2xl font-bold mb-4">Club Management 🚨</h2>
+                <div class="mb-4">
+                    <label class="text-lg">Club Name:</label>
+                    <input id="club-name" type="text" class="w-full p-2 rounded bg-gray-800 text-white" placeholder="e.g., Rizzler Academy" />
+                </div>
+                <div class="mb-4">
+                    <label class="text-lg">Club Focus:</label>
+                    <select id="club-focus" class="w-full p-2 rounded bg-gray-800 text-white">
+                        <option value="Rizz Training">Rizz Training 😎</option>
+                        <option value="Skibidi Battles">Skibidi Battles ⚔️</option>
+                        <option value="Gyatt Contests">Gyatt Contests 🍑</option>
+                        <option value="Mewing Marathons">Mewing Marathons 🗿</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="text-lg">Aura Boost:</label>
+                    <select id="club-boost" class="w-full p-2 rounded bg-gray-800 text-white">
+                        <option value="10">Low Aura (+10/sec)</option>
+                        <option value="20">Mid Aura (+20/sec)</option>
+                        <option value="30">High Aura (+30/sec)</option>
+                    </select>
+                </div>
+                <button id="add-club-btn" class="sigma-btn w-full">Add Club! 💥</button>
+                <div id="club-list" class="mt-4"></div>
+            </div>
+            <div class="bg-black bg-opacity-80 p-6 rounded-lg md:col-span-2">
+                <h2 class="text-2xl font-bold mb-4">Rizz Map 🗺️</h2>
+                <canvas id="rizz-map" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="tax-farm-page" class="hidden mt-32 flex flex-col items-center p-6">
+        <h1 class="text-4xl font-bold animate-pulse">💰 Tax Farm 💰</h1>
+        <div class="text-center mb-8">
+            <p class="text-xl mt-2">Taxes Collected: <span id="click-count">0</span></p>
+            <p class="text-xl mt-2">Rizzler Status: <span id="tax-rizz-meter">0 Aura Points</span></p>
+            <div class="gyatt-bar mt-4 w-64 mx-auto">
+                <div id="tax-gyatt-fill" class="gyatt-fill" style="width: 0%"></div>
+            </div>
+        </div>
+        <div id="skibidi-toilet" class="skibidi-toilet">🚽</div>
+        <div class="bg-black bg-opacity-80 p-6 rounded-lg mt-6 w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-4">Tax Upgrades 💥</h2>
+            <div id="tax-upgrade-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const sigmaBoys = [
+            'Kai Cenat', 'Baby Gronk', 'Quandale Dingle', 'Skibidi Rizzler', 'Ohio Sigma Chad',
+            'Grimace Shake God', 'Fanum Taxer', 'Mewing Master', 'Gyatt Emperor', 'Sussy Skibidi'
+        ];
+        const brainrotPhrases = [
+            'SKIBIDI TOILET TAKING OVER OHIO 🔥💀🚽',
+            'GYATT SO THICK IT BROKE THE RIZZLER 😳🍑',
+            'ONLY IN OHIO, SUSSY BAKA MEWING 24/7 🗿',
+            'FANUM TAXED MY WHOLE AURA, NO CAP 🦍',
+            'GRIMACE SHAKE HITTING DIFFERENT IN CLEVELAND 😈',
+            'RIZZLER VIBES, NO OHIO IMPOSTERS ALLOWED 😎',
+            'SKIBIDI BOP YES YES, GYATT LEVEL 1000 💥',
+            'MEWING STREAK BROKE THE INTERNET IN OHIO 🧊',
+            'ICE SPICE RIZZ UP, OHIO GOES CRAZY 🫦',
+            'OHIO SIGMAS EATING GRIMACE SHAKES AT 3AM 🍆',
+            'FANUM TAX FARM HITS OHIO, SKIBIDI TOILET GOES CRAZY 🚽💥',
+            'VIRAL POST ALERT! SKIBBIYGRAM BREAKS OHIO 📱🔥',
+            'TAX FARM SURGE! CLUBS GOING WILD IN OHIO 🗿'
+        ];
+        const challenges = [
+            'Mew for 10 seconds without blinking 🗿 (+50 Aura)',
+            'Tax the Fanum in Ohio style 🦍 (+75 Aura)',
+            'Hit the Griddy in a Skibidi Toilet 🚽 (+60 Aura)',
+            'Post GYATT propaganda on Skibbiygram 📱 (+80 Aura)',
+            'Out-rizz a Sussy Baka in Cleveland 😎 (+100 Aura)'
+        ];
+        const villains = ['Sussy Baka', 'LankyBox Imposter', 'Ohio Anti-Rizzler', 'Skibidi Toilet Traitor', 'Fanum Tax Evader'];
+        const randomEvents = [
+            'Gyatt Riot! One club loses 20 aura points! 😭',
+            'Skibidi Surge! All clubs gain +10 aura points! 💥',
+            'Fanum Tax Hits! Lose 50 aura points! 🦍',
+            'Mewing Ban! Mewing Marathons clubs halved for 10 sec! 🗿',
+            'Rizz Overload! Rizz Training clubs doubled for 10 sec! 😎',
+            'Ohio Rizzpocalypse! Taxes and clubs boost aura x2 for 10 sec! 🌌'
+        ];
+        const emojis = ['🔥', '💀', '😳', '🫦', '😂', '😈', '🍑', '🚽', '🦍', '🧊', '🗿', '🍆', '💥', '😎'];
+        const societyUpgrades = [
+            { id: 'rizz-multiplier', name: 'Rizz Multiplier', cost: 200, effect: () => rizzMultiplier *= 1.5, description: 'Boosts all aura gains by 1.5x' },
+            { id: 'skibidi-shield', name: 'Skibidi Shield', cost: 300, effect: () => eventLossMultiplier *= 0.5, description: 'Halves aura losses from events' },
+            { id: 'club-efficiency', name: 'Club Efficiency', cost: 250, effect: () => clubs.forEach(club => club.boost *= 1.2), description: 'Increases club aura output by 1.2x' }
+        ];
+        const clubUpgrades = {
+            'Rizz Training': { id: 'rizz-amp', name: 'Rizz Amplifier', cost: 100, effect: club => club.boost *= 1.3, description: 'Boosts Rizz Training aura by 1.3x' },
+            'Skibidi Battles': { id: 'battle-fury', name: 'Battle Fury', cost: 120, effect: club => club.boost *= 1.3, description: 'Boosts Skibidi Battles aura by 1.3x' },
+            'Gyatt Contests': { id: 'gyatt-amp', name: 'Gyatt Amplifier', cost: 150, effect: club => club.boost *= 1.4, description: 'Boosts Gyatt Contests aura by 1.4x' },
+            'Mewing Marathons': { id: 'mewing-streak', name: 'Mewing Streak', cost: 130, effect: club => club.boost *= 1.3, description: 'Boosts Mewing Marathons aura by 1.3x' }
+        };
+        const taxUpgrades = [
+            { id: 'rizzler-gloves', name: 'Rizzler Gloves', cost: 50, effect: () => clickAura += 5, description: 'Increases aura per tax by +5' },
+            { id: 'gyatt-bot', name: 'Gyatt Bot', cost: 100, effect: () => autoClickAura += 10, description: 'Auto-generates +10 aura/sec' },
+            { id: 'skibidi-taxer', name: 'Skibidi Taxer', cost: 150, effect: () => clickAura += 10, description: 'Increases aura per tax by +10' },
+            { id: 'mewing-drone', name: 'Mewing Drone', cost: 200, effect: () => autoClickAura += 20, description: 'Auto-generates +20 aura/sec' }
+        ];
+
+        let auraPoints = 0;
+        let prestigeLevel = 0;
+        let prestigeMultiplier = 1;
+        let rizzMultiplier = 1;
+        let eventLossMultiplier = 1;
+        let clickAura = 1;
+        let autoClickAura = 0;
+        let clickCount = 0;
+        let megaClickActive = false;
+        let society = { name: '', leader: '', vibe: '' };
+        let clubs = [];
+        let purchasedUpgrades = [];
+        let clubUpgradeStatus = {};
+        let purchasedTaxUpgrades = [];
+        let lastEvent = 'None';
+
+        function getRandomItem(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function updateStatusBar() {
+            document.getElementById('global-rizz-meter').textContent = Math.floor(auraPoints);
+            document.getElementById('global-click-count').textContent = clickCount;
+            document.getElementById('global-club-count').textContent = clubs.length;
+            document.getElementById('global-event').textContent = lastEvent;
+        }
+
+        function generateSigmaPost(source = '') {
+            const boy = getRandomItem(sigmaBoys);
+            let phrase = getRandomItem(brainrotPhrases);
+            const club = clubs.length > 0 ? getRandomItem(clubs) : null;
+            if (source === 'tax' && clickCount > 100) {
+                phrase = `FANUM TAX FARM HITS ${clickCount}! ${phrase}`;
+            } else if (source === 'viral') {
+                phrase = `VIRAL POST ALERT! ${society.name || 'OHIO'} GOES CRAZY! ${phrase}`;
+            } else if (club && Math.random() > 0.6) {
+                phrase = `${club.name} HOSTING ${club.focus.toUpperCase()}! ${phrase}`;
+            } else if (society.name && Math.random() > 0.5) {
+                phrase = `${society.name} RUNNING OHIO WITH ${society.vibe.toUpperCase()}! ${phrase}`;
+            }
+            if (purchasedUpgrades.includes('rizz-multiplier') && Math.random() > 0.7) {
+                phrase = `RIZZ MULTIPLIER ACTIVATED! ${phrase}`;
+            }
+            if (purchasedTaxUpgrades.includes('mewing-drone') && Math.random() > 0.8) {
+                phrase = `MEWING DRONE TAXING OHIO! ${phrase}`;
+            }
+            const emojiCount = Math.floor(Math.random() * 4) + 3;
+            let emojiString = '';
+            for (let i = 0; i < emojiCount; i++) {
+                emojiString += getRandomItem(emojis);
+            }
+            return `
+                <div class="post">
+                    <p class="text-2xl font-bold">${society.leader && Math.random() > 0.7 ? society.leader : boy} posted on Skibbiygram:</p>
+                    <p class="text-lg">${phrase} ${emojiString}</p>
+                    <p class="text-sm italic">Posted in ${society.name || 'The Ohio Club'}</p>
+                </div>
+            `;
+        }
+
+        function updateRizzMeter(points) {
+            auraPoints += points * rizzMultiplier * prestigeMultiplier;
+            if (auraPoints < 0) auraPoints = 0;
+            const meters = ['rizz-meter', 'tax-rizz-meter', 'global-rizz-meter'];
+            meters.forEach(id => document.getElementById(id).textContent = `${Math.floor(auraPoints)} Aura Points`);
+            const percentage = Math.min((auraPoints / 1000) * 100, 100);
+            const fills = ['gyatt-fill', 'tax-gyatt-fill'];
+            fills.forEach(id => {
+                const fill = document.getElementById(id);
+                fill.style.width = `${percentage}%`;
+                if (auraPoints >= 100 && auraPoints < 500) {
+                    fill.classList.add('vibrate');
+                } else if (auraPoints >= 500 && auraPoints < 1000) {
+                    fill.classList.add('vibrate');
+                    fill.style.background = 'linear-gradient(90deg, #ff0066, #00ffcc)';
+                } else if (auraPoints >= 1000) {
+                    fill.classList.add('vibrate');
+                    fill.style.background = 'linear-gradient(90deg, #ffd700, #ff00ff)';
+                    document.getElementById('prestige-btn').classList.remove('hidden');
+                } else {
+                    fill.classList.remove('vibrate');
+                }
+            });
+            createRizzExplosion();
+            updateStatusBar();
+        }
+
+        function createRizzExplosion() {
+            const explosion = document.createElement('div');
+            explosion.className = 'rizz-explosion';
+            document.body.appendChild(explosion);
+            setTimeout(() => explosion.remove(), 500);
+        }
+
+        function startChallenge() {
+            const challenge = getRandomItem(challenges);
+            const challengeText = document.getElementById('challenge-text');
+            const popup = document.getElementById('challenge-popup');
+            challengeText.textContent = challenge;
+            popup.classList.remove('hidden');
+        }
+
+        function skibidiBattle() {
+            const villain = getRandomItem(villains);
+            const roll = Math.random();
+            let points = 0;
+            let message = '';
+            if (roll > 0.7) {
+                points = Math.floor(Math.random() * 100) + 50;
+                message = `You defeated ${villain} with MAX RIZZ! +${points} Aura Points! 😎🔥`;
+                if (clubs.length > 0) {
+                    clubs.forEach(club => club.boost += 5);
+                    updateClubList();
+                    setTimeout(() => {
+                        clubs.forEach(club => club.boost -= 5);
+                        updateClubList();
+                    }, 10000);
+                }
+            } else if (roll > 0.3) {
+                points = Math.floor(Math.random() * 50) + 10;
+                message = `Close call against ${villain}, but you rizzed it up! +${points} Aura Points! 💪`;
+            } else {
+                points = -Math.floor(Math.random() * 30) + 10;
+                message = `${villain} taxed your aura! ${points} Aura Points! 😭`;
+            }
+            updateRizzMeter(points);
+            alert(message);
+        }
+
+        function updateClubList() {
+            const clubList = document.getElementById('club-list');
+            clubList.innerHTML = clubs.map((club, index) => `
+                <div class="club-item">
+                    <p>${club.name} (${club.focus}, +${Math.floor(club.boost)}/sec)${clubUpgradeStatus[club.name] ? ' [Upgraded]' : ''}</p>
+                    <button class="sigma-btn text-sm" onclick="deleteClub(${index})">Delete Club</button>
+                    ${!clubUpgradeStatus[club.name] && clubUpgrades[club.focus] ? `<button class="sigma-btn text-sm ml-2" onclick="buyClubUpgrade('${club.name}', '${club.focus}', ${index})">${clubUpgrades[club.focus].name} (${clubUpgrades[club.focus].cost} Aura)</button>` : ''}
+                </div>
+            `).join('');
+            updateRizzMap();
+            updateStatusBar();
+        }
+
+        function updateSocietyInfo() {
+            document.getElementById('society-info').textContent = `${society.name} led by ${society.leader} with ${society.vibe} vibe`;
+            const synergyBonus = calculateSynergyBonus();
+            document.getElementById('society-info').innerHTML += synergyBonus > 1 ? `<br>Synergy Bonus: ${synergyBonus}x Aura` : '';
+        }
+
+        function updateUpgradeList() {
+            const upgradeList = document.getElementById('upgrade-list');
+            upgradeList.innerHTML = societyUpgrades.map(upgrade => `
+                <div class="upgrade-item">
+                    <p>${upgrade.name} (${upgrade.cost} Aura): ${upgrade.description}</p>
+                    ${!purchasedUpgrades.includes(upgrade.id) ? `<button class="sigma-btn text-sm" onclick="buySocietyUpgrade('${upgrade.id}')">Buy</button>` : '<p class="text-green-400">Purchased!</p>'}
+                </div>
+            `).join('');
+        }
+
+        function updateTaxUpgradeList() {
+            const upgradeList = document.getElementById('tax-upgrade-list');
+            upgradeList.innerHTML = taxUpgrades.map(upgrade => `
+                <div class="tax-upgrade">
+                    <p>${upgrade.name} (${upgrade.cost} Aura): ${upgrade.description}</p>
+                    ${!purchasedTaxUpgrades.includes(upgrade.id) ? `<button class="sigma-btn text-sm" onclick="buyTaxUpgrade('${upgrade.id}')">Buy</button>` : '<p class="text-green-400">Purchased!</p>'}
+                </div>
+            `).join('');
+        }
+
+        function calculateSynergyBonus() {
+            const focuses = clubs.map(club => club.focus);
+            const taxBoosts = purchasedTaxUpgrades.filter(id => ['gyatt-bot', 'mewing-drone'].includes(id)).length;
+            const synergies = [
+                ['Rizz Training', 'Gyatt Contests'],
+                ['Skibidi Battles', 'Mewing Marathons']
+            ];
+            let bonus = 1;
+            synergies.forEach(pair => {
+                if (focuses.includes(pair[0]) && focuses.includes(pair[1])) {
+                    bonus *= 1.2;
+                }
+            });
+            if (taxBoosts > 0 && clubs.length > 0) {
+                bonus *= 1.1 * taxBoosts;
+            }
+            return bonus;
+        }
+
+        function calculateClickAura() {
+            let baseAura = clickAura;
+            if (society.vibe === 'Max Rizz') baseAura += 2;
+            else if (society.vibe === 'Gyatt Overload') baseAura += 1;
+            return baseAura;
+        }
+
+        function randomEvent() {
+            const event = getRandomItem(randomEvents);
+            let points = 0;
+            lastEvent = event;
+            if (event.includes('Gyatt Riot')) {
+                points = -20 * eventLossMultiplier;
+                updateRizzMeter(points);
+            } else if (event.includes('Skibidi Surge')) {
+                points = 10 * clubs.length;
+                updateRizzMeter(points);
+            } else if (event.includes('Fanum Tax')) {
+                points = -50 * eventLossMultiplier;
+                updateRizzMeter(points);
+            } else if (event.includes('Mewing Ban')) {
+                clubs.forEach(club => {
+                    if (club.focus === 'Mewing Marathons') club.boost /= 2;
+                });
+                updateClubList();
+                setTimeout(() => {
+                    clubs.forEach(club => {
+                        if (club.focus === 'Mewing Marathons') club.boost *= 2;
+                    });
+                    updateClubList();
+                }, 10000);
+            } else if (event.includes('Rizz Overload')) {
+                clubs.forEach(club => {
+                    if (club.focus === 'Rizz Training') club.boost *= 2;
+                });
+                updateClubList();
+                setTimeout(() => {
+                    clubs.forEach(club => {
+                        if (club.focus === 'Rizz Training') club.boost /= 2;
+                    });
+                    updateClubList();
+                }, 10000);
+            } else if (event.includes('Rizzpocalypse')) {
+                const boost = 2;
+                clubs.forEach(club => club.boost *= boost);
+                clickAura *= boost;
+                updateClubList();
+                setTimeout(() => {
+                    clubs.forEach(club => club.boost /= boost);
+                    clickAura /= boost;
+                    updateClubList();
+                }, 10000);
+            }
+            alert(event);
+            updateStatusBar();
+            const feed = document.getElementById('skibbiygram-feed');
+            feed.innerHTML = generateSigmaPost('event') + feed.innerHTML;
+        }
+
+        function updateRizzMap() {
+            const canvas = document.getElementById('rizz-map');
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#333';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            clubs.forEach((club, index) => {
+                const x = (index % 4) * 100 + 50;
+                const y = Math.floor(index / 4) * 100 + 50;
+                ctx.fillStyle = '#ffd700';
+                ctx.fillRect(x - 20, y - 20, 40, 40);
+                ctx.fillStyle = '#fff';
+                ctx.font = '20px Comic Sans MS';
+                ctx.textAlign = 'center';
+                ctx.fillText(club.focus[0], x, y);
+                ctx.font = '12px Comic Sans MS';
+                ctx.fillText(club.name, x, y + 30);
+            });
+        }
+
+        function triggerTaxSurge() {
+            if (clickCount > 500 && clubs.length > 0) {
+                clubs.forEach(club => club.boost *= 1.5);
+                updateClubList();
+                lastEvent = 'Tax Farm Surge!';
+                alert('TAX FARM SURGE! Club aura x1.5 for 10 seconds! 🗿');
+                const feed = document.getElementById('skibbiygram-feed');
+                feed.innerHTML = generateSigmaPost('tax') + feed.innerHTML;
+                setTimeout(() => {
+                    clubs.forEach(club => club.boost /= 1.5);
+                    updateClubList();
+                    lastEvent = 'None';
+                    updateStatusBar();
+                }, 10000);
+            }
+        }
+
+        function togglePage(pageToShow) {
+            const pages = ['skibbiygram-page', 'world-page', 'tax-farm-page'];
+            const tabs = ['skibbiygram-tab', 'world-tab', 'tax-farm-tab'];
+            pages.forEach(page => document.getElementById(page).classList.add('hidden'));
+            tabs.forEach(tab => document.getElementById(tab).classList.remove('active'));
+            document.getElementById(pageToShow).classList.remove('hidden');
+            document.getElementById(`${pageToShow.split('-')[0]}-tab`).classList.add('active');
+        }
+
+        window.deleteClub = function(index) {
+            clubs.splice(index, 1);
+            updateClubList();
+            updateRizzMeter(-10);
+        };
+
+        window.buySocietyUpgrade = function(id) {
+            const upgrade = societyUpgrades.find(u => u.id === id);
+            if (auraPoints >= upgrade.cost && !purchasedUpgrades.includes(id)) {
+                updateRizzMeter(-upgrade.cost);
+                upgrade.effect();
+                purchasedUpgrades.push(id);
+                updateUpgradeList();
+                const feed = document.getElementById('skibbiygram-feed');
+                feed.innerHTML = generateSigmaPost('upgrade') + feed.innerHTML;
+            } else {
+                alert('Not enough aura or already purchased, sussy baka! 😭');
+            }
+        };
+
+        window.buyClubUpgrade = function(clubName, focus, index) {
+            const upgrade = clubUpgrades[focus];
+            if (auraPoints >= upgrade.cost && !clubUpgradeStatus[clubName]) {
+                updateRizzMeter(-upgrade.cost);
+                upgrade.effect(clubs[index]);
+                clubUpgradeStatus[clubName] = true;
+                updateClubList();
+                const feed = document.getElementById('skibbiygram-feed');
+                feed.innerHTML = generateSigmaPost('club') + feed.innerHTML;
+            } else {
+                alert('Not enough aura or already upgraded, Ohio imposter! 😈');
+            }
+        };
+
+        window.buyTaxUpgrade = function(id) {
+            const upgrade = taxUpgrades.find(u => u.id === id);
+            if (auraPoints >= upgrade.cost && !purchasedTaxUpgrades.includes(id)) {
+                updateRizzMeter(-upgrade.cost);
+                upgrade.effect();
+                purchasedTaxUpgrades.push(id);
+                updateTaxUpgradeList();
+                const feed = document.getElementById('skibbiygram-feed');
+                feed.innerHTML = generateSigmaPost('tax') + feed.innerHTML;
+            } else {
+                alert('Not enough aura or already purchased, sussy baka! 😭');
+            }
+        };
+
+        document.getElementById('skibbiygram-tab').addEventListener('click', () => togglePage('skibbiygram-page'));
+        document.getElementById('world-tab').addEventListener('click', () => togglePage('world-page'));
+        document.getElementById('tax-farm-tab').addEventListener('click', () => togglePage('tax-farm-page'));
+
+        document.getElementById('new-post-btn').addEventListener('click', () => {
+            const feed = document.getElementById('skibbiygram-feed');
+            feed.innerHTML = generateSigmaPost('viral') + feed.innerHTML;
+            lastEvent = 'Viral Post!';
+            updateStatusBar();
+            clickAura *= 2;
+            document.getElementById('skibidi-toilet').style.background = '#ff00ff';
+            setTimeout(() => {
+                clickAura /= 2;
+                document.getElementById('skibidi-toilet').style.background = '#fff';
+                lastEvent = 'None';
+                updateStatusBar();
+            }, 10000);
+            alert('VIRAL POST! Tax aura x2 for 10 seconds! 📱🔥');
+        });
+
+        document.getElementById('rizz-up-btn').addEventListener('click', () => {
+            const boost = clubs.reduce((sum, club) => sum + club.boost, 0) * calculateSynergyBonus();
+            updateRizzMeter((Math.floor(Math.random() * 60) + 20 + boost));
+            const audio = new Audio('https://www.myinstants.com/media/sounds/skibidi-toilet.mp3');
+            audio.play().catch(e => console.log('Audio playback failed:', e));
+        });
+
+        document.getElementById('battle-btn').addEventListener('click', skibidiBattle);
+
+        document.getElementById('challenge-btn').addEventListener('click', startChallenge);
+
+        document.getElementById('complete-challenge-btn').addEventListener('click', () => {
+            const challengeText = document.getElementById('challenge-text').textContent;
+            const points = parseInt(challengeText.match(/\+(\d+)/)?.[1] || '0');
+            const boost = clubs.reduce((sum, club) => sum + club.boost, 0) * calculateSynergyBonus();
+            updateRizzMeter(points + boost);
+            document.getElementById('challenge-popup').classList.add('hidden');
+            clubs.forEach(club => club.boost *= 1.3);
+            updateClubList();
+            lastEvent = 'Challenge Boost!';
+            updateStatusBar();
+            setTimeout(() => {
+                clubs.forEach(club => club.boost /= 1.3);
+                updateClubList();
+                lastEvent = 'None';
+                updateStatusBar();
+            }, 10000);
+            const feed = document.getElementById('skibbiygram-feed');
+            feed.innerHTML = generateSigmaPost('challenge') + feed.innerHTML;
+        });
+
+        document.getElementById('create-society-btn').addEventListener('click', () => {
+            const name = document.getElementById('society-name').value.trim();
+            const leader = document.getElementById('society-leader').value;
+            const vibe = document.getElementById('society-vibe').value;
+            if (name === '') {
+                document.getElementById('society-status').textContent = 'Enter a society name, sussy baka! 😭';
+                return;
+            }
+            society = { name, leader, vibe };
+            document.getElementById('society-status').textContent = `${name} created with ${leader} leading the ${vibe} vibe! 🗿`;
+            document.getElementById('society-form').classList.add('hidden');
+            document.getElementById('world-dashboard').classList.remove('hidden');
+            updateSocietyInfo();
+            updateUpgradeList();
+            updateRizzMeter(50);
+            const feed = document.getElementById('skibbiygram-feed');
+            feed.innerHTML = generateSigmaPost('society') + feed.innerHTML;
+        });
+
+        document.getElementById('add-club-btn').addEventListener('click', () => {
+            const name = document.getElementById('club-name').value.trim();
+            const focus = document.getElementById('club-focus').value;
+            const boost = parseInt(document.getElementById('club-boost').value);
+            if (name === '') {
+                alert('Enter a club name, Ohio imposter! 😈');
+                return;
+            }
+            clubs.push({ name, focus, boost });
+            autoClickAura += 5 * clubs.length;
+            updateClubList();
+            updateSocietyInfo();
+            document.getElementById('club-name').value = '';
+            updateRizzMeter(20);
+            const feed = document.getElementById('skibbiygram-feed');
+            feed.innerHTML = generateSigmaPost('club') + feed.innerHTML;
+        });
+
+        document.getElementById('prestige-btn').addEventListener('click', () => {
+            if (auraPoints >= 1000) {
+                prestigeLevel++;
+                auraPoints = 0;
+                clubs = [];
+                purchasedUpgrades = [];
+                clubUpgradeStatus = {};
+                purchasedTaxUpgrades = [];
+                clickAura = 1;
+                autoClickAura = 0;
+                rizzMultiplier = 1;
+                eventLossMultiplier = 1;
+                prestigeMultiplier *= 1.5;
+                document.getElementById('prestige-level').textContent = prestigeLevel;
+                document.getElementById('prestige-badge').textContent = emojis[prestigeLevel % emojis.length];
+                document.getElementById('prestige-btn').classList.add('hidden');
+                updateClubList();
+                updateSocietyInfo();
+                updateUpgradeList();
+                updateTaxUpgradeList();
+                updateRizzMeter(0);
+                const feed = document.getElementById('skibbiygram-feed');
+                feed.innerHTML = generateSigmaPost('prestige') + feed.innerHTML;
+                alert(`Prestiged to Level ${prestigeLevel}! Aura gains boosted by ${prestigeMultiplier}x! ${emojis[prestigeLevel % emojis.length]}`);
+            }
+        });
+
+        document.getElementById('skibidi-toilet').addEventListener('click', () => {
+            clickCount++;
+            document.getElementById('click-count').textContent = clickCount;
+            const aura = megaClickActive ? calculateClickAura() * 10 : calculateClickAura();
+            updateRizzMeter(aura);
+            const audio = new Audio('https://www.myinstants.com/media/sounds/skibidi-toilet.mp3');
+            audio.play().catch(e => console.log('Audio playback failed:', e));
+            if (Math.random() < 0.05) {
+                megaClickActive = true;
+                document.getElementById('skibidi-toilet').style.background = '#ff00ff';
+                lastEvent = 'Mega Tax!';
+                updateStatusBar();
+                alert('MEGA TAX ACTIVATED! 10x aura for 5 seconds! 💥');
+                const feed = document.getElementById('skibbiygram-feed');
+                feed.innerHTML = generateSigmaPost('tax') + feed.innerHTML;
+                setTimeout(() => {
+                    megaClickActive = false;
+                    document.getElementById('skibidi-toilet').style.background = '#fff';
+                    lastEvent = 'None';
+                    updateStatusBar();
+                }, 5000);
+            }
+            triggerTaxSurge();
+        });
+
+        // Passive aura generation from clubs and tax upgrades
+        setInterval(() => {
+            const boost = clubs.reduce((sum, club) => sum + club.boost, 0) * calculateSynergyBonus();
+            updateRizzMeter(boost + autoClickAura);
+        }, 1000);
+
+        // Random events every 15 seconds
+        setInterval(randomEvent, 15000);
+
+        // Initial setup
+        document.getElementById('skibbiygram-feed').innerHTML = generateSigmaPost();
+        updateTaxUpgradeList();
+        updateStatusBar();
+    </script>
+</body>
+</html>
